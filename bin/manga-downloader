@@ -1,0 +1,139 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+require 'optparse'
+require 'yaml'
+
+options = {}
+options = YAML::load(File.read("manga-downloader.yaml")) if File.exists?("manga-downloader.yaml")
+
+option_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: manga-downloader <command>"
+  opts.separator ""
+  opts.separator "The most commonly used commands are:"
+
+  options[:init] = true if !options[:url].nil?
+  opts.on("--init URL", "Create an empty manga-downloader repository") do |url|
+    options[:init] = true
+    options[:url] = url
+  end
+
+  opts.on("--fetch", "Download objects and references from the repository") do |fetch|
+    options[:fetch] = true
+  end
+
+  opts.on("--check [FOLDER]", "Checks the integrity of the repository") do |folder|
+    options[:check] = true
+    options[:check_folder] = nil
+    options[:check_folder] = folder if !folder.nil?
+  end
+
+  opts.on("--clear-cache [VOLUME]", "Removes all the cache of the current repository") do |volume|
+    options[:clear_cache] = true
+    options[:clear_cache_folder] = nil
+    options[:clear_cache_folder] = volume if !volume.nil?
+  end
+
+  # defining compilation types
+  [:pdf, :cbz].each do |compile_type|
+    opts.on("--#{compile_type.to_s} [FOLDER]", "Compiles the destination folder into #{compile_type.to_s}") do |folder|
+      options[:compile_type] = compile_type
+      options[:compile_folder] = nil
+      options[:compile_folder] = folder if !folder.nil?
+    end
+  end
+
+  opts.separator ""
+  opts.separator "The most commonly used options are:"
+
+  options[:hydra_concurrency] = 100
+  options[:pages_per_volume] = 250
+
+  options[:page_size] = options[:page_size] || [1080, 1440]
+  opts.on("--size PAGE_SIZE", "Size of the page of the document to be rendered width,height") do |s|
+    options[:page_size] = s.split(",").map { |u| u.to_i }
+  end
+
+  opts.on("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
+end
+
+begin
+  option_parser.parse!(ARGV)
+  mandatory = [:init]                                              # Enforce the presence of
+  missing = mandatory.select{ |param| options[param].nil? }        # the -t and -f switches
+  if not missing.empty?                                            #
+    puts "Missing command: #{missing.join(', ')}"                  #
+    puts option_parser                                             #
+    exit                                                           #
+  end                                                              #
+rescue OptionParser::ParseError
+  $stderr.print "Error: " + $! + "\n"
+  exit
+rescue OptionParser::InvalidOption, OptionParser::MissingArgument  #
+  puts $!.to_s                                                     # Friendly output when parsing fails
+  puts option_parser                                               #
+  exit                                                             #
+end
+
+require 'manga-downloader'
+generator = MangaDownloader::Workflow.new(options)
+
+if options[:fetch]
+  unless generator.state?(:chapter_urls)
+    puts "Massive parallel scanning of all chapters \n"
+    generator.fetch_chapter_urls
+    puts "\n\n"
+  end
+  unless generator.state?(:page_urls)
+    puts "Massive parallel scanning of all pages \n"
+    generator.fetch_page_urls
+    puts "\n\n"
+  end
+  unless generator.state?(:image_urls)
+    puts "Massive parallel scanning of all images \n"
+    generator.fetch_image_urls
+    puts "\n"
+    puts "Total page links found: #{generator.chapter_pages_count}"
+    puts "\n"
+  end
+  unless generator.state?(:images)
+    puts "Massive parallel download of all page images \n"
+    generator.fetch_images
+    puts "\n\n"
+  end
+end
+
+if options[:check]
+  puts "Checking integrity for: #{options[:check_folder]} \n"
+  generator.check options[:check_folder]
+  puts "\n\n"
+end
+
+if options[:clear_cache]
+  puts "Removing cache for the current repository \n"
+  generator.clear_cache options[:clear_cache_folder]
+  puts "\n\n"
+end
+
+if !options[:compile_type].nil?
+  puts "Resize the dimensions of all images to page size \n"
+  generator.resize_images options[:compile_folder]
+  puts "\n\n"
+
+  [:pdf, :cbz].each do |compile_type|
+    if options[:compile_type] == compile_type
+      puts "Compiling #{compile_type.to_s} ebook \n"
+      generator.send("compile_#{compile_type.to_s}", options[:compile_folder])
+    end
+  end
+  puts "\n\n"
+end
+
+# checking wich options we should persist on configuration file
+options_persist = options.select do |key,value|
+  [:url, :page_size].include? key
+end
+
+File.open("manga-downloader.yaml", 'w') {|f| f.write(YAML::dump(options_persist)) }
