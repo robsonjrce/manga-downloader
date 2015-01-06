@@ -106,7 +106,7 @@ module MangaDownloader
                 extension   = File.extname(URI.parse(image['src']).path)
 
                 chapter_images.merge!(chapter_key => []) if chapter_images[chapter_key].nil?
-                chapter_images[chapter_key] << ImageData.new( tokens[1].gsub(/\W/, ' ').gsub(/\s+/, ' ').strip, "#{tokens[2]}#{extension}", image['src'] )
+                chapter_images[chapter_key] << ImageData.new( tokens[1], "#{tokens[2]}#{extension}", image['src'] )
                 print '.'
               else
                 self.fetch_image_urls_errors << { url: page_link, error: response.code }

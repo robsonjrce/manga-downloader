@@ -65,7 +65,7 @@ module SiteSuport
     end
 
     def image_alt text
-      text.match(/^(.*\s\d+?)\s(Page\s\d+?)$/)
+      text.match(/^(.*\s\d+.*\d*?)\s(Page\s\d+?)$/)
     end
   end
 
