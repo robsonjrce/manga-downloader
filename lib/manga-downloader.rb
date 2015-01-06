@@ -9,7 +9,7 @@ require 'prawn'
 require 'fastimage'
 require 'open-uri'
 require 'yaml'
-require 'site-suport'
+require 'site-support/site_support'
 
 module MangaDownloader
   ImageData = Struct.new(:folder, :filename, :url)
@@ -42,7 +42,7 @@ module MangaDownloader
       self.fetch_images_errors     = []
 
       # factory for manga site
-      self.site = SiteSuport::SiteSuportFactory.factory options[:url]
+      self.site = SiteSupport::SiteSupportFactory.factory options[:url]
     end
 
     def fetch_chapter_urls
