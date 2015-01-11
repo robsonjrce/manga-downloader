@@ -1,9 +1,5 @@
 module SiteSupportPlugin
-  class MangaHere
-    def initialize url
-      @url = url
-    end
-
+  class MangaHere < SiteSupportPlugin::PluginBase
     def manga_title
       "h1.title"
     end

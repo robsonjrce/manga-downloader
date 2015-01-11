@@ -1,9 +1,5 @@
 module SiteSupportPlugin
-  class MangaReader
-    def initialize url
-      @url = url
-    end
-
+  class MangaReader < SiteSupportPlugin::PluginBase
     def manga_title
       "#mangaproperties h1"
     end
@@ -13,7 +9,7 @@ module SiteSupportPlugin
     end
 
     def chapter_list_parse url
-      URI.parse(@url).host + url
+      @url_sanitized + url
     end
 
     def page_list
@@ -21,7 +17,7 @@ module SiteSupportPlugin
     end
 
     def page_list_parse url
-      URI.parse(@url).host + url
+      @url_sanitized + url
     end
 
     def image

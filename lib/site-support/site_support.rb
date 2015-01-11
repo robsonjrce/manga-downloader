@@ -1,4 +1,5 @@
 require 'uri'
+require_relative 'site_support_plugin_base'
 require_relative 'site_manga_here'
 require_relative 'site_manga_reader'
 
