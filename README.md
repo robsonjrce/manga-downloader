@@ -33,9 +33,11 @@ And then execute:
 * `--init URL`                   Create an empty manga-downloader repository
 * `--fetch`                      Download objects and references from the repository
 * `--check [FOLDER]`             Checks the integrity of the repository
+* `--clear-cache [VOLUME]`       Removes all the cache of the current repository
 * `--pdf [FOLDER]`               Compiles the destination folder into pdf
 * `--cbz [FOLDER]`               Compiles the destination folder into cbz
 * `--size PAGE_SIZE`             Defines the size of the page to be rendered width,height
+* `--help`                       Show help message
 
 ## Usage
 
@@ -63,21 +65,22 @@ manga-downloader --fetch
 
 And convert it to be read on our e-reader:
 
-On devices that support cbz files (as Kobo Aura HD), to convert all volumes:
-```
-manga-downloader --cbz
-```
+On devices that support `cbz` files (as Kobo Aura HD):
 
-And a single volume:
+To convert a single volume you should do:
 ```
 manga-downloader --cbz [Volume Name]
 ```
 
+To convert all volumes into `cbr` just omit the volume name.
+
 For all the others devices, there's always the support of `PDF`:
 
 ```
-manga-downloader --pdf
+manga-downloader --pdf [Volume Name]
 ```
+
+To convert all volumes into `pdf` just omit the volume name.
 
 ## Contributing
 
