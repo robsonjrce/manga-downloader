@@ -286,6 +286,7 @@ module MangaDownloader
       end
 
       folders.each do |folder|
+        next if !File.directory?(folder)
         print "\tCompiling volume #{folder}: "
         folder_resize = File.join(manga_root_folder, "." + File.basename(folder))
         if File.directory?(folder)
