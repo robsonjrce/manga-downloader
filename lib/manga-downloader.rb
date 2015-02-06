@@ -303,6 +303,10 @@ module MangaDownloader
         Dir[File.join(folder,"*.*")].each do |file_raw|
           filename_zerofill = "Page " + ("%03d" % file_raw.split(" ").last.to_i) + "." + (file_raw.gsub(/.*\./, ""))
           filename_path = File.join(folder_resize, File.basename(filename_zerofill))
+          if File.exist? filename_path
+            print "."
+            next
+          end
           image = Magick::Image.read( file_raw ).first
           resized = image.resize(page_size[0], page_size[1])
           # resized = image.resize_to_fit(page_size[0], page_size[1])
