@@ -218,6 +218,7 @@ module MangaDownloader
           FileUtils.rm_r(folder_destination, :force => true)
           removed += 1
           print "\tCleaning cache for #{folder_sanitized}"
+          print "\n"
         end
       end
       print "\n"
@@ -240,6 +241,7 @@ module MangaDownloader
         cbz_path = File.join("." + folder_sanitized)
         cbz_name = File.join(manga_root_folder, folder_sanitized + ".cbz")
         %x[zip -jr '#{cbz_name}' '#{cbz_path}']
+        print "\n"
       end
     end
 
@@ -272,6 +274,7 @@ module MangaDownloader
             end
           end
         end
+        print "\n"
       end
     end
 
@@ -298,15 +301,17 @@ module MangaDownloader
           next
         end
         Dir[File.join(folder,"*.*")].each do |file_raw|
+          filename_zerofill = "Page " + ("%03d" % file_raw.split(" ").last.to_i) + "." + (file_raw.gsub(/.*\./, ""))
+          filename_path = File.join(folder_resize, File.basename(filename_zerofill))
           image = Magick::Image.read( file_raw ).first
           resized = image.resize(page_size[0], page_size[1])
           # resized = image.resize_to_fit(page_size[0], page_size[1])
           # resized.trim!
-          filename_zerofill = "Page " + ("%03d" % file_raw.split(" ").last.to_i) + "." + (file_raw.gsub(/.*\./, ""))
-          resized.write( File.join(folder_resize, File.basename(filename_zerofill)) ) { self.quality = 50 }
+          resized.write(filename_path) { self.quality = 50 }
           print "."
         end
         GC.start # to avoid a leak too big (ImageMagick is notorious for that, specially on resizes)
+        print "\n"
       end
     end
 
